@@ -5,7 +5,7 @@
 # SET FOREIGN_KEY_CHECKS = 1; -- FK 다시 활성화
 
 # TODO 1 : 도커 컨테이너 안에 csv 데이터 삽입
-# docker cp /Users/choiayeong/book.csv book-kafka-eda-mysql-1:/var/lib/mysql-files/book.csv
+# docker cp /경로/book.csv book-kafka-eda-mysql-1:/var/lib/mysql-files/book.csv
 
 # TODO 2 : 권한 설정
 # docker exec -it book-kafka-eda-mysql-1 bash
