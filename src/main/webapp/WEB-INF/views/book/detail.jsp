@@ -73,7 +73,7 @@
         .price {
             font-size: 28px;
             font-weight: 900;
-            color: #e02020;
+            color: #222;
             margin-bottom: 28px;
         }
 
@@ -151,7 +151,8 @@
         }
 
         .promo-tag {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
             padding: 6px 14px;
             border-radius: 999px;
             font-size: 13px;
@@ -182,17 +183,29 @@
             border: 1.5px solid #ccc;
         }
 
-        .discount-price {
-            font-size: 22px;
+        .price-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .discount-rate {
+            font-size: 26px;
             font-weight: 900;
             color: #e02020;
+        }
+
+        .sale-price {
+            font-size: 26px;
+            font-weight: 900;
+            color: #222;
         }
 
         .original-price {
             font-size: 16px;
             color: #aaa;
             text-decoration: line-through;
-            margin-left: 8px;
         }
     </style>
 </head>
@@ -235,8 +248,11 @@
             <div class="price">
                 <c:choose>
                     <c:when test="${book.hasDiscountTag and book.displayPrice != null}">
-                        <span class="discount-price">${book.displayPrice}원</span>
-                        <span class="original-price">${book.regularPrice}원</span>
+                        <div class="price-row">
+                            <span class="discount-rate">${book.discountRate}%</span>
+                            <span class="sale-price">${book.displayPrice}원</span>
+                            <span class="original-price">${book.regularPrice}원</span>
+                        </div>
                     </c:when>
                     <c:otherwise>
                         ${book.regularPrice}원

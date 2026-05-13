@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class BookService {
 
@@ -23,4 +25,8 @@ public class BookService {
         return bookRepository.findBookCardByIsbn(isbn)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 도서입니다. isbn=" + isbn));
     }
+
+    public List<BookCardDto> findBestsellers() { return bookRepository.findBestsellers(); }
+    public List<BookCardDto> findDiscounted()   { return bookRepository.findDiscounted(); }
+    public List<BookCardDto> findGiftEvent()    { return bookRepository.findGiftEvent(); }
 }
