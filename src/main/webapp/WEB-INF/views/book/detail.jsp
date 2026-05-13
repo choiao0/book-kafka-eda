@@ -142,6 +142,58 @@
         .btn:hover {
             opacity: 0.85;
         }
+
+        .promo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .promo-tag {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .tag-bestseller {
+            background-color: #fff8dc;
+            color: #7a5800;
+            border: 1.5px solid #ffd700;
+        }
+
+        .tag-discount {
+            background-color: #fff1f0;
+            color: #cf1322;
+            border: 1.5px solid #ff4d4f;
+        }
+
+        .tag-gift {
+            background-color: #f6ffed;
+            color: #237804;
+            border: 1.5px solid #52c41a;
+        }
+
+        .tag-gift.sold-out {
+            background-color: #f5f5f5;
+            color: #888;
+            border: 1.5px solid #ccc;
+        }
+
+        .discount-price {
+            font-size: 22px;
+            font-weight: 900;
+            color: #e02020;
+        }
+
+        .original-price {
+            font-size: 16px;
+            color: #aaa;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -161,8 +213,35 @@
                 ${book.author} · ${book.publisher}
             </div>
 
+            <div class="promo-tags">
+                <c:if test="${book.hasBestsellerTag}">
+                    <span class="promo-tag tag-bestseller">&#11088; 베스트셀러 ${book.bestsellerRank}위</span>
+                </c:if>
+                <c:if test="${book.hasDiscountTag}">
+                    <span class="promo-tag tag-discount">${book.discountRate}% 할인</span>
+                </c:if>
+                <c:if test="${book.hasGiftTag}">
+                    <c:choose>
+                        <c:when test="${book.giftStatus eq 'SOLD_OUT'}">
+                            <span class="promo-tag tag-gift sold-out">증정품 소진</span>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="promo-tag tag-gift">&#127381; 선착순 증정 (${book.giftRemainingQty}개 남음)</span>
+                        </c:otherwise>
+                    </c:choose>
+                </c:if>
+            </div>
+
             <div class="price">
-                ${book.regularPrice}원
+                <c:choose>
+                    <c:when test="${book.hasDiscountTag and book.displayPrice != null}">
+                        <span class="discount-price">${book.displayPrice}원</span>
+                        <span class="original-price">${book.regularPrice}원</span>
+                    </c:when>
+                    <c:otherwise>
+                        ${book.regularPrice}원
+                    </c:otherwise>
+                </c:choose>
             </div>
 
             <div class="info-list">

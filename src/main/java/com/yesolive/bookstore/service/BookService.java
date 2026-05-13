@@ -1,6 +1,6 @@
 package com.yesolive.bookstore.service;
 
-import com.yesolive.bookstore.model.Book;
+import com.yesolive.bookstore.model.dto.BookCardDto;
 import com.yesolive.bookstore.repository.BookRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,12 +15,12 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
-    public Page<Book> findAll(Pageable pageable) {
-        return bookRepository.findAll(pageable);
+    public Page<BookCardDto> findBookCards(Pageable pageable) {
+        return bookRepository.findBookCards(pageable);
     }
 
-    public Book findByIsbn(String isbn) {
-        return bookRepository.findByIsbn(isbn)
+    public BookCardDto findBookCardByIsbn(String isbn) {
+        return bookRepository.findBookCardByIsbn(isbn)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 도서입니다. isbn=" + isbn));
     }
 }

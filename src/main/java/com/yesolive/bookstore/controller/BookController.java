@@ -1,6 +1,6 @@
 package com.yesolive.bookstore.controller;
 
-import com.yesolive.bookstore.model.Book;
+import com.yesolive.bookstore.model.dto.BookCardDto;
 import com.yesolive.bookstore.service.BookService;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Controller;
@@ -20,7 +20,7 @@ public class BookController {
     @GetMapping("/list")
     public String list(@RequestParam(defaultValue = "0") int page, Model model) {
         Pageable pageable = PageRequest.of(page, 16, Sort.by("bookId").ascending());
-        Page<Book> bookPage = bookService.findAll(pageable);
+        Page<BookCardDto> bookPage = bookService.findBookCards(pageable);
 
         int currentPage = bookPage.getNumber();
         int totalPages = bookPage.getTotalPages();
@@ -39,9 +39,8 @@ public class BookController {
 
     @GetMapping("/{isbn}")
     public String detail(@PathVariable String isbn, Model model) {
-        Book book = bookService.findByIsbn(isbn);
+        BookCardDto book = bookService.findBookCardByIsbn(isbn);
         model.addAttribute("book", book);
-        System.out.println(model.getAttribute("book"));
         return "book/detail";
     }
 }

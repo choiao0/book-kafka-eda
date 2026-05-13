@@ -65,6 +65,8 @@
             overflow: hidden;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         .book-card:hover {
@@ -80,6 +82,7 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .thumb-wrap img {
@@ -90,17 +93,20 @@
 
         .book-info {
             padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
         }
 
         .book-title {
             display: block;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             line-height: 1.4;
             color: #222;
             text-decoration: none;
             min-height: 44px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .book-title:hover {
@@ -117,19 +123,58 @@
             font-size: 18px;
             font-weight: 900;
             color: #e02020;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
-        .book-meta {
-            font-size: 12px;
+        .promo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 12px;
+            min-height: 0;
+        }
+
+        .promo-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.5;
+            white-space: nowrap;
+        }
+
+        .tag-bestseller {
+            background-color: #fff8e1;
+            color: #b8860b;
+            border: 1px solid #ffd700;
+        }
+
+        .tag-discount {
+            background-color: #fff0f0;
+            color: #c0392b;
+            border: 1px solid #ffb3b3;
+        }
+
+        .tag-gift {
+            background-color: #f0fff4;
+            color: #276749;
+            border: 1px solid #9ae6b4;
+        }
+
+        .tag-gift.sold-out {
+            background-color: #f5f5f5;
             color: #999;
-            margin-bottom: 14px;
+            border: 1px solid #ddd;
         }
 
         .card-actions {
             display: flex;
             gap: 8px;
             align-items: center;
+            margin-top: auto;
         }
 
         .detail-link {
@@ -146,18 +191,6 @@
 
         .detail-link:hover {
             background-color: #e9ecef;
-        }
-
-        .btn-delete {
-            padding: 8px 12px;
-            border-radius: 8px;
-            background-color: #ff4d4f;
-            color: white;
-            font-size: 13px;
-        }
-
-        .btn-delete:hover {
-            background-color: #d9363e;
         }
 
         .empty {
@@ -221,26 +254,46 @@
 
                     <div class="book-info">
                         <a class="book-title" href="${pageContext.request.contextPath}/book/${book.isbn}">
-                                ${book.title}
+                            ${book.title}
                         </a>
 
                         <div class="book-author">${book.author} · ${book.publisher}</div>
-                        <div class="book-price">${book.regularPrice}원</div>
-                        <!--<div class="book-meta">ISBN ${book.isbn}</div>-->
+
+                        <div class="book-price">
+                            <c:choose>
+                                <c:when test="${book.hasDiscountTag and book.displayPrice != null}">
+                                    ${book.displayPrice}원
+                                    <span style="font-size:13px; font-weight:500; color:#aaa; text-decoration:line-through; margin-left:4px;">${book.regularPrice}원</span>
+                                </c:when>
+                                <c:otherwise>
+                                    ${book.regularPrice}원
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+
+                        <div class="promo-tags">
+                            <c:if test="${book.hasBestsellerTag}">
+                                <span class="promo-tag tag-bestseller">⭐ 베스트셀러 ${book.bestsellerRank}위</span>
+                            </c:if>
+                            <c:if test="${book.hasDiscountTag}">
+                                <span class="promo-tag tag-discount">${book.discountRate}% 할인</span>
+                            </c:if>
+                            <c:if test="${book.hasGiftTag}">
+                                <c:choose>
+                                    <c:when test="${book.giftStatus eq 'SOLD_OUT'}">
+                                        <span class="promo-tag tag-gift sold-out">증정품 소진</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="promo-tag tag-gift">🎁 선착순 증정 (${book.giftRemainingQty}개 남음)</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:if>
+                        </div>
 
                         <div class="card-actions">
                             <a class="detail-link" href="${pageContext.request.contextPath}/book/${book.isbn}">
                                 상세보기
                             </a>
-
-                            <!--
-                            <form action="${pageContext.request.contextPath}/book/${book.isbn}/delete"
-                                  method="post"
-                                  style="display:inline;"
-                                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                                <button type="submit" class="btn-delete">삭제</button>
-                            </form>
-                            -->
                         </div>
                     </div>
                 </div>
@@ -256,7 +309,7 @@
         <c:forEach begin="${startPage}" end="${endPage}" var="i">
             <a href="?page=${i}"
                class="page-btn ${bookPage.number == i ? 'active' : ''}">
-                    ${i + 1}
+                ${i + 1}
             </a>
         </c:forEach>
 

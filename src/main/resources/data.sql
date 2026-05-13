@@ -94,68 +94,58 @@ VALUES
 
 
 -- book_display_info
+-- 태그 조합별 더미 데이터 (첫 페이지 book_id 1~16 대상)
+-- 3개 태그: 7 / 2개 태그: 6, 10, 1, 4 / 1개 태그: 11, 13, 15, 2, 5, 9 / 태그 없음: 3, 8, 12, 14, 16
 INSERT INTO book_display_info
-(book_id,
- has_bestseller_tag,
- bestseller_rank,
- has_discount_tag,
- discount_rate,
- display_price,
- has_gift_tag,
- gift_status,
- gift_remaining_qty,
- data_source,
- last_synced_at,
- created_at,
- updated_at)
+(book_id, has_bestseller_tag, bestseller_rank,
+ has_discount_tag, discount_rate, display_price,
+ has_gift_tag, gift_status, gift_remaining_qty,
+ data_source, last_synced_at, created_at, updated_at)
 VALUES
+    -- [3개] 베스트셀러 + 할인 + 선착순 증정 : 달러구트 꿈 백화점 (24000원)
+    (7,  1, 1,  1, 20, 19200,  1, 'ACTIVE',   50,  'BATCH', NOW(), NOW(), NOW()),
 
-    -- 달러구트 꿈 백화점
-    (8198, 1, 1, 1, 20, 19200,
-     0, NULL, NULL,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [2개] 베스트셀러 + 선착순 증정        : 지리산 1 (18500원)
+    (6,  1, 2,  0, NULL, NULL, 1, 'ACTIVE',   15,  'BATCH', NOW(), NOW(), NOW()),
 
-    -- 지리산
-    (8197, 1, 2, 1, 10, 16650,
-     1, 'ACTIVE', 4,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [2개] 베스트셀러 + 할인               : 개미 5년, 세후 55억 (17000원)
+    (10, 1, 3,  1, 20, 13600,  0, NULL, NULL,      'BATCH', NOW(), NOW(), NOW()),
 
-    -- 개미 5년 세후 55억
-    (8201, 1, 3, 1, 20, 13600,
-     0, NULL, NULL,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [2개] 베스트셀러 + 할인               : 너에게 목소리를 보낼게 (16000원)
+    (1,  1, 4,  1, 10, 14400,  0, NULL, NULL,      'BATCH', NOW(), NOW(), NOW()),
 
-    -- 너에게 목소리를 보낼게
-    (8192, 1, 4, 1, 10, 14400,
-     0, NULL, NULL,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [2개] 할인 + 선착순 증정 (소진)       : 즉시 기분을 바꿔드립니다 (14000원)
+    (4,  0, NULL, 1, 15, 11900, 1, 'SOLD_OUT',  0, 'BATCH', NOW(), NOW(), NOW()),
 
-    -- 즉시 기분을 바꿔드립니다
-    (8195, 1, 5, 0, NULL, 14000,
-     1, 'ACTIVE', 0,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [1개] 베스트셀러                      : 보통의 것이 좋아 (14800원)
+    (11, 1, 5,  0, NULL, NULL,  0, NULL, NULL,     'BATCH', NOW(), NOW(), NOW()),
 
-    -- 일기에도 거짓말을 쓰는 사람
-    (8193, 0, NULL, 0, NULL, 15800,
-     1, 'ACTIVE', 12,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [1개] 할인                            : COSMOS 우주에 깃든 예술 (23000원)
+    (13, 0, NULL, 1, 15, 19550, 0, NULL, NULL,     'BATCH', NOW(), NOW(), NOW()),
 
-    -- 본격 한중일 세계사
-    (8194, 0, NULL, 0, NULL, 14800,
-     0, NULL, NULL,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [1개] 할인                            : 천 번의 죽음이 내게 알려준 것들 (14000원)
+    (15, 0, NULL, 1, 10, 12600, 0, NULL, NULL,     'BATCH', NOW(), NOW(), NOW()),
 
-    -- 오늘도 리추얼
-    (8196, 0, NULL, 0, NULL, 15000,
-     0, NULL, NULL,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [1개] 선착순 증정 (ACTIVE)            : 일기에도 거짓말을 쓰는 사람 (15800원)
+    (2,  0, NULL, 0, NULL, NULL, 1, 'ACTIVE',   12, 'BATCH', NOW(), NOW(), NOW()),
 
-    -- 그린 스완
-    (8199, 0, NULL, 0, NULL, 17000,
-     0, NULL, NULL,
-     'BATCH', NOW(), NOW(), NOW()),
+    -- [1개] 선착순 증정 (ACTIVE)            : 오늘도 리추얼 (15000원)
+    (5,  0, NULL, 0, NULL, NULL, 1, 'ACTIVE',   30, 'BATCH', NOW(), NOW(), NOW()),
 
-    -- 마음이 허기질 때 어린이책에서 꺼내 먹은 것들
-    (8200, 0, NULL, 0, NULL, 13000,
-     1, 'ACTIVE', 25,
-     'BATCH', NOW(), NOW(), NOW());
+    -- [1개] 선착순 증정 (SOLD_OUT)          : 마음이 허기질 때 (13000원)
+    (9,  0, NULL, 0, NULL, NULL, 1, 'SOLD_OUT',  0, 'BATCH', NOW(), NOW(), NOW()),
+
+    -- [없음]                                : 본격 한중일 세계사 12
+    (3,  0, NULL, 0, NULL, NULL, 0, NULL, NULL,    'BATCH', NOW(), NOW(), NOW()),
+
+    -- [없음]                                : 그린 스완
+    (8,  0, NULL, 0, NULL, NULL, 0, NULL, NULL,    'BATCH', NOW(), NOW(), NOW()),
+
+    -- [없음]                                : 신의 비밀, 징조
+    (12, 0, NULL, 0, NULL, NULL, 0, NULL, NULL,    'BATCH', NOW(), NOW(), NOW()),
+
+    -- [없음]                                : 2022 대한민국이 열광할 시니어 트렌드
+    (14, 0, NULL, 0, NULL, NULL, 0, NULL, NULL,    'BATCH', NOW(), NOW(), NOW()),
+
+    -- [없음]                                : 과학이 재밌어지는 아주 친절한 과학책
+    (16, 0, NULL, 0, NULL, NULL, 0, NULL, NULL,    'BATCH', NOW(), NOW(), NOW());
