@@ -1,4 +1,4 @@
-package com.yesolive.bookstore.model.dto;
+package com.yesolive.bookstore.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
