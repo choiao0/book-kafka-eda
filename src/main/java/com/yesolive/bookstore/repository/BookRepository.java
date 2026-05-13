@@ -1,14 +1,10 @@
 package com.yesolive.bookstore.repository;
 
 import com.yesolive.bookstore.model.Book;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
-@Repository
-public class BookRepository {
-
-    private final Map<String, Book> bookStore = new HashMap<>();
-
+public interface BookRepository extends JpaRepository<Book, Long> {
+    Optional<Book> findByIsbn(String isbn);
 }

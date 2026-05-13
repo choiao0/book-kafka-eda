@@ -71,7 +71,7 @@ public class Book {
     public Long getBookId() { return bookId; }
     public String getIsbn() { return isbn; }
     public String getTitle() { return title; }
-    public String getCategory() { return content; }
+    public String getContent() { return content; }
     public String getAuthor() { return author; }
     public String getPublisher() { return publisher; }
     public Integer getRegularPrice() { return regularPrice; }

@@ -1,0 +1,9 @@
+
+SELECT *
+FROM book
+WHERE book_id = 8198;
+
+
+SELECT *
+FROM book
+WHERE isbn = '9780890900956';
