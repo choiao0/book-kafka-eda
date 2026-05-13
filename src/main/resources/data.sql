@@ -1,5 +1,5 @@
 -- book
-INSERT INTO book (isbn, title, author, publisher, regular_price, category, thumbnail_url, published_at, created_at, updated_at) VALUES
+INSERT INTO book (isbn, title, author, publisher, regular_price, content, thumbnail_url, published_at, created_at, updated_at) VALUES
                                                                                                                                     ('9791162242964', '클린 코드', '로버트 마틴', '인사이트', 22000, '개발', 'https://via.placeholder.com/150', '2013-12-24 00:00:00', NOW(), NOW()),
                                                                                                                                     ('9791158391201', '객체지향의 사실과 오해', '조영호', '위키북스', 18000, '개발', 'https://via.placeholder.com/150', '2015-06-17 00:00:00', NOW(), NOW()),
                                                                                                                                     ('9791162243130', '이펙티브 자바', '조슈아 블로크', '인사이트', 36000, '개발', 'https://via.placeholder.com/150', '2018-11-01 00:00:00', NOW(), NOW()),

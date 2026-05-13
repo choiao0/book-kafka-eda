@@ -18,6 +18,9 @@ public class Book {
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
+    @Column(name = "content", length = 2000)
+    private String content;
+
     @Column(name = "author", nullable = false, length = 100)
     private String author;
 
@@ -26,9 +29,6 @@ public class Book {
 
     @Column(name = "regular_price", nullable = false)
     private Integer regularPrice;
-
-    @Column(name = "category", length = 50)
-    private String category;
 
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
@@ -56,14 +56,14 @@ public class Book {
     protected Book() {}
 
     public Book(String isbn, String title, String author, String publisher,
-                Integer regularPrice, String category, String thumbnailUrl,
+                Integer regularPrice, String content, String thumbnailUrl,
                 LocalDateTime publishedAt) {
         this.isbn = isbn;
         this.title = title;
+        this.content = content;
         this.author = author;
         this.publisher = publisher;
         this.regularPrice = regularPrice;
-        this.category = category;
         this.thumbnailUrl = thumbnailUrl;
         this.publishedAt = publishedAt;
     }
@@ -71,10 +71,10 @@ public class Book {
     public Long getBookId() { return bookId; }
     public String getIsbn() { return isbn; }
     public String getTitle() { return title; }
+    public String getCategory() { return content; }
     public String getAuthor() { return author; }
     public String getPublisher() { return publisher; }
     public Integer getRegularPrice() { return regularPrice; }
-    public String getCategory() { return category; }
     public String getThumbnailUrl() { return thumbnailUrl; }
     public LocalDateTime getPublishedAt() { return publishedAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
