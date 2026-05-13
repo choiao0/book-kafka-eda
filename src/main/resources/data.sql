@@ -1,5 +1,5 @@
 -- book
-                                                                                                                                ('9788937460449', '어린 왕자', '생텍쥐페리', '열린책들', 9800, '소설', 'https://via.placeholder.com/150', '2015-05-20 00:00:00', NOW(), NOW());
+
 # SET FOREIGN_KEY_CHECKS = 0; -- FK 비활성화
 # TRUNCATE TABLE book;
 # SET FOREIGN_KEY_CHECKS = 1; -- FK 다시 활성화
