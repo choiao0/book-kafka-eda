@@ -93,5 +93,21 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     """)
     List<BookCardDto> findGiftEvent();
 
+    @Query("""
+        SELECT new com.yesolive.bookstore.model.dto.BookCardDto(
+            b.bookId, b.isbn, b.title, b.author, b.publisher, b.regularPrice, b.thumbnailUrl,
+            b.content, b.publishedAt, b.createdAt,
+            CASE WHEN d.hasBestsellerTag = true THEN true ELSE false END,
+            d.bestsellerRank,
+            CASE WHEN d.hasDiscountTag = true THEN true ELSE false END,
+            d.discountRate, d.displayPrice,
+            CASE WHEN d.hasGiftTag = true THEN true ELSE false END,
+            d.giftStatus, d.giftRemainingQty
+        )
+        FROM Book b LEFT JOIN BookDisplayInfo d ON b.bookId = d.book.bookId
+        ORDER BY b.bookId ASC
+    """)
+    List<BookCardDto> findAllBookCards();
+
     Optional<Book> findByIsbn(String isbn);
 }

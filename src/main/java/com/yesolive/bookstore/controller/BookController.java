@@ -1,8 +1,10 @@
 package com.yesolive.bookstore.controller;
 
 import com.yesolive.bookstore.model.dto.BookCardDto;
+import com.yesolive.bookstore.model.dto.GiftConsistencyDto;
 import com.yesolive.bookstore.service.BookService;
 import org.springframework.data.domain.*;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -53,5 +55,21 @@ public class BookController {
         BookCardDto book = bookService.findBookCardByIsbn(isbn);
         model.addAttribute("book", book);
         return "book/detail";
+    }
+
+    // ── REST API (정합성 확인용) ─────────────────────────────────────────────
+
+    /** 전체 도서 목록 API — book_display_info 기준 (배치 캐시) */
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public java.util.List<BookCardDto> listApi() {
+        return bookService.findAllBookCards();
+    }
+
+    /** 도서 상세 API — gift_promotion 실제 테이블 직접 조회로 정합성 갭 확인 */
+    @GetMapping(value = "/{bookId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public GiftConsistencyDto detailApi(@PathVariable Long bookId) {
+        return bookService.findGiftConsistencyByBookId(bookId);
     }
 }
