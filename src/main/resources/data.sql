@@ -1,15 +1,32 @@
 -- book
-INSERT INTO book (isbn, title, author, publisher, regular_price, content, thumbnail_url, published_at, created_at, updated_at) VALUES
-                                                                                                                                    ('9791162242964', '클린 코드', '로버트 마틴', '인사이트', 22000, '개발', 'https://via.placeholder.com/150', '2013-12-24 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9791158391201', '객체지향의 사실과 오해', '조영호', '위키북스', 18000, '개발', 'https://via.placeholder.com/150', '2015-06-17 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9791162243130', '이펙티브 자바', '조슈아 블로크', '인사이트', 36000, '개발', 'https://via.placeholder.com/150', '2018-11-01 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9791188621651', '도메인 주도 설계', '에릭 에반스', '위키북스', 43000, '개발', 'https://via.placeholder.com/150', '2011-07-01 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9791162242988', '리팩터링', '마틴 파울러', '한빛미디어', 34000, '개발', 'https://via.placeholder.com/150', '2020-04-01 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9791185873809', '가난한 아빠 부자 아빠', '로버트 기요사키', '민음인', 16800, '경제', 'https://via.placeholder.com/150', '2018-01-01 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9788936434120', '채식주의자', '한강', '창비', 12000, '소설', 'https://via.placeholder.com/150', '2007-10-30 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9788954651135', '아몬드', '손원평', '창비', 13800, '소설', 'https://via.placeholder.com/150', '2017-03-31 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9788932920245', '82년생 김지영', '조남주', '민음사', 13000, '소설', 'https://via.placeholder.com/150', '2016-10-14 00:00:00', NOW(), NOW()),
-                                                                                                                                    ('9788937460449', '어린 왕자', '생텍쥐페리', '열린책들', 9800, '소설', 'https://via.placeholder.com/150', '2015-05-20 00:00:00', NOW(), NOW());
+                                                                                                                                ('9788937460449', '어린 왕자', '생텍쥐페리', '열린책들', 9800, '소설', 'https://via.placeholder.com/150', '2015-05-20 00:00:00', NOW(), NOW());
+# SET FOREIGN_KEY_CHECKS = 0; -- FK 비활성화
+# TRUNCATE TABLE book;
+# SET FOREIGN_KEY_CHECKS = 1; -- FK 다시 활성화
+
+# TODO 3 : 도커 컨테이너 안에 csv 데이터 삽입
+# docker cp /Users/kimsohui/books.csv book-kafka-eda-mysql-1:/books.csv
+
+# TODO 4 : mysql에 csv 데이터 연결
+LOAD DATA INFILE '/books.csv' -- 컨테이너 내부 경로
+    INTO TABLE book
+    FIELDS TERMINATED BY ','
+    ENCLOSED BY '"'
+    LINES TERMINATED BY '\n'
+    IGNORE 1 ROWS
+    (
+         isbn,
+         title,
+         author,
+         publisher,
+         regular_price,
+         content,
+         thumbnail_url,
+         published_at
+        )
+    SET
+        created_at = NOW(),
+        updated_at = NOW();
 
 -- bestseller_promotion (1~5위)
 INSERT INTO bestseller_promotion (book_id, ranking, list_type, valid_from, valid_until, published_at, created_at) VALUES
