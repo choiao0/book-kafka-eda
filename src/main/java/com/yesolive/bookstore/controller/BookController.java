@@ -18,23 +18,34 @@ public class BookController {
     }
 
     @GetMapping("/list")
-    public String list(@RequestParam(defaultValue = "0") int page, Model model) {
+    public String list(@RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "all") String tab,
+                       Model model) {
         Pageable pageable = PageRequest.of(page, 16, Sort.by("bookId").ascending());
         Page<BookCardDto> bookPage = bookService.findBookCards(pageable);
 
         int currentPage = bookPage.getNumber();
-        int totalPages = bookPage.getTotalPages();
-
         int blockSize = 10;
         int startPage = (currentPage / blockSize) * blockSize;
-        int endPage = Math.min(startPage + blockSize - 1, totalPages - 1);
+        int endPage = Math.min(startPage + blockSize - 1, bookPage.getTotalPages() - 1);
 
         model.addAttribute("books", bookPage.getContent());
         model.addAttribute("bookPage", bookPage);
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
 
+        model.addAttribute("bestsellers", bookService.findBestsellers());
+        model.addAttribute("discounted",  bookService.findDiscounted());
+        model.addAttribute("giftEvent",   bookService.findGiftEvent());
+
+        model.addAttribute("activeTab", tab);
+
         return "book/list";
+    }
+
+    @GetMapping("/promotion")
+    public String promotion() {
+        return "redirect:/book/list?tab=bestseller";
     }
 
     @GetMapping("/{isbn}")
