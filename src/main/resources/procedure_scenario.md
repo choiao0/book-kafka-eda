@@ -48,7 +48,7 @@
     BESTSELLER,DISCOUNT
     ```
     
-<img width="788" height="730" alt="main" src="https://github.com/user-attachments/assets/9292580f-98af-4023-bb0a-227d7929e471" />
+    <img width="788" height="730" alt="main" src="https://github.com/user-attachments/assets/9292580f-98af-4023-bb0a-227d7929e471" />
 
 
 2. `detail.jsp` : 도서 상세 화면
