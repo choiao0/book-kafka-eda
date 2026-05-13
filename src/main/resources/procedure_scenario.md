@@ -22,6 +22,9 @@
 3. GIFT (선착순 증정 이벤트)
 ```
 
+<img width="187" height="309" alt="스크린샷 2026-05-14 오전 12 33 28" src="https://github.com/user-attachments/assets/ef2fcf71-91ed-4822-b204-7ddc2442efd8" />
+
+
 ---
 ### 화면 구조
 
@@ -44,6 +47,10 @@
     DISCOUNT
     BESTSELLER,DISCOUNT
     ```
+    
+<img width="788" height="730" alt="main" src="https://github.com/user-attachments/assets/9292580f-98af-4023-bb0a-227d7929e471" />
+
+
 2. `detail.jsp` : 도서 상세 화면
 - 상세 페이지는 현재 상태의 정확한 데이터를 보여주기 위해 원본 테이블을 직접 조회합니다.
     ```agsl
@@ -108,6 +115,9 @@ gift_promotion
     procedure.sql
     ```
 - 30초 마다 프로모션 정보를 갱신하는 배치 프로시저 동작
+
+    <img width="1170" height="380" alt="batch" src="https://github.com/user-attachments/assets/81dbd70e-1069-40f0-a5cf-fa1b18c01c33" />
+
 
 3. 배치 프로시저 동작 중, 증정품 재고 소진
    ```agsl
