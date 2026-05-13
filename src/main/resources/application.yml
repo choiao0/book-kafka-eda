@@ -21,6 +21,12 @@ spring:
       schema-locations: classpath:schema.sql
       data-locations: classpath:data.sql
 
+  batch:
+    job:
+      enabled: false            # 앱 시작 시 자동 실행 방지 (스케줄러로만 실행)
+    jdbc:
+      initialize-schema: always # Spring Batch 메타 테이블 자동 생성
+
   mvc:
     view:
       prefix: /WEB-INF/views/
