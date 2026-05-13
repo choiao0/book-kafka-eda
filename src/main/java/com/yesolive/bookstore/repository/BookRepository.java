@@ -1,15 +1,13 @@
-package com.yesolive.bookstore.model.dao;
+package com.yesolive.bookstore.repository;
 
-import com.yesolive.bookstore.model.dto.Book;
+import com.yesolive.bookstore.model.Book;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Repository
-public class BookDao {
+public class BookRepository {
 
     private final Map<String, Book> bookStore = new HashMap<>();
 
