@@ -52,7 +52,7 @@ public class BookController {
 
     @GetMapping("/{isbn}")
     public String detail(@PathVariable String isbn, Model model) {
-        BookCardDto book = bookService.findBookCardByIsbn(isbn);
+        BookCardDto book = bookService.findBookDetailByIsbn(isbn);
         model.addAttribute("book", book);
         return "book/detail";
     }
