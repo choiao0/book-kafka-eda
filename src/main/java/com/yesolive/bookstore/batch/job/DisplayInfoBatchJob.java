@@ -20,6 +20,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Configuration
 public class DisplayInfoBatchJob {
@@ -120,20 +121,35 @@ public class DisplayInfoBatchJob {
     @Bean
     public Tasklet refreshTasklet() {
         return (StepContribution contribution, ChunkContext chunkContext) -> {
+
             long start = System.currentTimeMillis();
 
+            LocalDateTime batchStarted = LocalDateTime.now();
+            String batchStartedTime = batchStarted.format(
+                    DateTimeFormatter.ofPattern("HH:mm:ss")
+            );
+
             int upserted = jdbcTemplate.update(UPSERT_SQL);
-            int deleted  = jdbcTemplate.update(DELETE_EXPIRED_SQL);
+            int deleted = jdbcTemplate.update(DELETE_EXPIRED_SQL);
 
             long elapsed = System.currentTimeMillis() - start;
 
-            var ctx = chunkContext.getStepContext().getStepExecution()
-                    .getJobExecution().getExecutionContext();
+            var ctx = chunkContext.getStepContext()
+                    .getStepExecution()
+                    .getJobExecution()
+                    .getExecutionContext();
+
             ctx.putInt(UPSERT_COUNT_KEY, upserted);
             ctx.putInt(DELETE_COUNT_KEY, deleted);
 
-            log.info("[BATCH] 갱신 완료 | 소요시간: {}ms | UPSERT: {}행 | DELETE: {}행",
-                    elapsed, upserted, deleted);
+            log.info(
+                    "[BATCH] 갱신 완료 | 실행 시각: {} | 소요시간: {}ms | UPSERT: {}행 | DELETE: {}행",
+                    batchStartedTime,
+                    elapsed,
+                    upserted,
+                    deleted
+            );
+
             return RepeatStatus.FINISHED;
         };
     }

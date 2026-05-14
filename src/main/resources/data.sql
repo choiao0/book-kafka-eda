@@ -41,9 +41,9 @@ LOAD DATA INFILE '/var/lib/mysql-files/book.csv'
         updated_at = NOW();
 
 # 혜택 테이블 데이터 삭제
-# TRUNCATE TABLE bestseller_promotion;
-# TRUNCATE TABLE discount_promotion;
-# TRUNCATE TABLE gift_promotion;
+TRUNCATE TABLE bestseller_promotion;
+TRUNCATE TABLE discount_promotion;
+TRUNCATE TABLE gift_promotion;
 
 -- bestseller_promotion (첫 페이지 book_id 1~16 기준)
 INSERT INTO bestseller_promotion

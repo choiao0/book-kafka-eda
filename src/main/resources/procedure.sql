@@ -3,10 +3,17 @@
 -- 정합성 깨짐 테스트
 --
 -- 1. 원본 gift_promotion은 SOLD_OUT
--- UPDATE gift_promotion
--- SET remaining_quantity = 0,
---     status = 'SOLD_OUT'
--- WHERE book_id = 1;
+UPDATE gift_promotion
+SET remaining_quantity = 100,
+    status = 'ACTIVE'
+WHERE book_id = 7;
+
+
+UPDATE gift_promotion
+SET remaining_quantity = 0,
+    status = 'SOLD_OUT'
+WHERE book_id = 7;
+
 --
 -- 2. book_display_info에는 선착순 태그가 남아 있습니다
 -- SELECT *
