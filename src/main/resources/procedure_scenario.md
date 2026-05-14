@@ -193,6 +193,8 @@
 
 <img width="502" height="23" alt="스크린샷 2026-05-14 오후 5 14 29" src="https://github.com/user-attachments/assets/c8e5059c-3257-40c1-8d89-f80b06183e6a" />
 
+<img width="129" height="23" alt="스크린샷 2026-05-14 오후 5 39 11" src="https://github.com/user-attachments/assets/271cfb51-c3b8-4725-8331-db38ae73d3c9" />
+
 
 ---
 ### 데이터 특성을 고려한 하이브리드 아키텍처 개선 방향
