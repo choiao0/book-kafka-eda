@@ -7,3 +7,5 @@ WHERE book_id = 8198;
 SELECT *
 FROM book
 WHERE isbn = '9780890900956';
+
+SHOW CREATE TABLE book;

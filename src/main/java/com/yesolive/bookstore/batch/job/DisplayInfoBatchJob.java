@@ -118,6 +118,30 @@ public class DisplayInfoBatchJob {
                 .build();
     }
 
+    private long getStatusValue(String name) {
+        return jdbcTemplate.queryForObject(
+                "SHOW GLOBAL STATUS LIKE ?",
+                (rs, rowNum) -> rs.getLong("Value"),
+                name
+        );
+    }
+
+    private long getReadRowsApprox() {
+        long readFirst = getStatusValue("Handler_read_first");
+        long readKey = getStatusValue("Handler_read_key");
+        long readNext = getStatusValue("Handler_read_next");
+        long readPrev = getStatusValue("Handler_read_prev");
+        long readRnd = getStatusValue("Handler_read_rnd");
+        long readRndNext = getStatusValue("Handler_read_rnd_next");
+
+        return readFirst
+                + readKey
+                + readNext
+                + readPrev
+                + readRnd
+                + readRndNext;
+    }
+
     @Bean
     public Tasklet refreshTasklet() {
         return (StepContribution contribution, ChunkContext chunkContext) -> {
@@ -129,8 +153,25 @@ public class DisplayInfoBatchJob {
                     DateTimeFormatter.ofPattern("HH:mm:ss")
             );
 
+            long beforeBufferReads = getStatusValue("Innodb_buffer_pool_read_requests");
+            long beforeDiskReads = getStatusValue("Innodb_buffer_pool_reads");
+            long beforeRowsReadApprox = getReadRowsApprox();
+
+            long upsertStart = System.currentTimeMillis();
             int upserted = jdbcTemplate.update(UPSERT_SQL);
+            long upsertElapsed = System.currentTimeMillis() - upsertStart;
+
+            long deleteStart = System.currentTimeMillis();
             int deleted = jdbcTemplate.update(DELETE_EXPIRED_SQL);
+            long deleteElapsed = System.currentTimeMillis() - deleteStart;
+
+            long afterBufferReads = getStatusValue("Innodb_buffer_pool_read_requests");
+            long afterDiskReads = getStatusValue("Innodb_buffer_pool_reads");
+            long afterRowsReadApprox = getReadRowsApprox();
+
+            long bufferReadDiff = afterBufferReads - beforeBufferReads;
+            long diskReadDiff = afterDiskReads - beforeDiskReads;
+            long rowsReadApproxDiff = afterRowsReadApprox - beforeRowsReadApprox;
 
             long elapsed = System.currentTimeMillis() - start;
 
@@ -143,11 +184,16 @@ public class DisplayInfoBatchJob {
             ctx.putInt(DELETE_COUNT_KEY, deleted);
 
             log.info(
-                    "[BATCH] 갱신 완료 | 실행 시각: {} | 소요시간: {}ms | UPSERT: {}행 | DELETE: {}행",
+                    "[BATCH] 갱신 완료 | 실행 시각: {} | 총 소요시간: {}ms | UPSERT: {}행({}ms) | DELETE: {}행({}ms) | buffer_reads: {} | disk_reads: {} | rows_read_approx: {}",
                     batchStartedTime,
                     elapsed,
                     upserted,
-                    deleted
+                    upsertElapsed,
+                    deleted,
+                    deleteElapsed,
+                    bufferReadDiff,
+                    diskReadDiff,
+                    rowsReadApproxDiff
             );
 
             return RepeatStatus.FINISHED;

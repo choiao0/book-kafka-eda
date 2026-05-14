@@ -21,6 +21,8 @@ CREATE TABLE book (
                           ON UPDATE CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX idx_book_isbn ON book(isbn);
+
 CREATE TABLE bestseller_promotion (
                                       promotion_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                       book_id      BIGINT      NOT NULL,
