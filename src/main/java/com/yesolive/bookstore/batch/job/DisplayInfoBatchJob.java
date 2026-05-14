@@ -26,6 +26,7 @@ public class DisplayInfoBatchJob {
 
     private static final Logger log = LoggerFactory.getLogger(DisplayInfoBatchJob.class);
 
+    /** 현재 유효한 프로모션이 하나라도 있는 책만 UPSERT */
     private static final String UPSERT_SQL = """
             INSERT INTO book_display_info (
                 book_id, has_bestseller_tag, bestseller_rank,
@@ -39,7 +40,7 @@ public class DisplayInfoBatchJob {
                 bp.ranking,
                 CASE WHEN dp.promotion_id IS NOT NULL THEN 1 ELSE 0 END,
                 dp.discount_rate,
-                COALESCE(dp.discounted_price, b.regular_price),
+                dp.discounted_price,
                 CASE WHEN gp.promotion_id IS NOT NULL THEN 1 ELSE 0 END,
                 gp.status,
                 gp.remaining_quantity,
@@ -52,6 +53,9 @@ public class DisplayInfoBatchJob {
                 ON b.book_id = dp.book_id AND NOW() BETWEEN dp.valid_from AND dp.valid_until
             LEFT JOIN gift_promotion gp
                 ON b.book_id = gp.book_id AND NOW() BETWEEN gp.valid_from AND gp.valid_until
+            WHERE bp.promotion_id IS NOT NULL
+               OR dp.promotion_id IS NOT NULL
+               OR gp.promotion_id IS NOT NULL
             ON DUPLICATE KEY UPDATE
                 has_bestseller_tag = VALUES(has_bestseller_tag),
                 bestseller_rank    = VALUES(bestseller_rank),
@@ -65,6 +69,29 @@ public class DisplayInfoBatchJob {
                 last_synced_at     = VALUES(last_synced_at),
                 updated_at         = VALUES(updated_at)
             """;
+
+    /** 모든 프로모션이 만료된 책 행 삭제 */
+    private static final String DELETE_EXPIRED_SQL = """
+            DELETE FROM book_display_info
+            WHERE NOT EXISTS (
+                SELECT 1 FROM bestseller_promotion bp
+                WHERE bp.book_id = book_display_info.book_id
+                  AND NOW() BETWEEN bp.valid_from AND bp.valid_until
+            )
+            AND NOT EXISTS (
+                SELECT 1 FROM discount_promotion dp
+                WHERE dp.book_id = book_display_info.book_id
+                  AND NOW() BETWEEN dp.valid_from AND dp.valid_until
+            )
+            AND NOT EXISTS (
+                SELECT 1 FROM gift_promotion gp
+                WHERE gp.book_id = book_display_info.book_id
+                  AND NOW() BETWEEN gp.valid_from AND gp.valid_until
+            )
+            """;
+
+    private static final String UPSERT_COUNT_KEY = "upsertCount";
+    private static final String DELETE_COUNT_KEY  = "deleteCount";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -94,14 +121,19 @@ public class DisplayInfoBatchJob {
     public Tasklet refreshTasklet() {
         return (StepContribution contribution, ChunkContext chunkContext) -> {
             long start = System.currentTimeMillis();
-            jdbcTemplate.update(UPSERT_SQL);
+
+            int upserted = jdbcTemplate.update(UPSERT_SQL);
+            int deleted  = jdbcTemplate.update(DELETE_EXPIRED_SQL);
+
             long elapsed = System.currentTimeMillis() - start;
 
-            Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM book_display_info", Integer.class);
-            int processed = count != null ? count : 0;
+            var ctx = chunkContext.getStepContext().getStepExecution()
+                    .getJobExecution().getExecutionContext();
+            ctx.putInt(UPSERT_COUNT_KEY, upserted);
+            ctx.putInt(DELETE_COUNT_KEY, deleted);
 
-            log.info("[BATCH] 갱신 완료 | 소요시간: {}ms | 처리건수: {}건", elapsed, processed);
+            log.info("[BATCH] 갱신 완료 | 소요시간: {}ms | UPSERT: {}행 | DELETE: {}행",
+                    elapsed, upserted, deleted);
             return RepeatStatus.FINISHED;
         };
     }
@@ -118,9 +150,9 @@ public class DisplayInfoBatchJob {
                 String errorMsg = null;
 
                 if (!failed) {
-                    Integer count = jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM book_display_info", Integer.class);
-                    processedCount = count != null ? count : 0;
+                    var ctx = jobExecution.getExecutionContext();
+                    processedCount = ctx.getInt(UPSERT_COUNT_KEY, 0)
+                                   + ctx.getInt(DELETE_COUNT_KEY, 0);
                 } else {
                     errorMsg = jobExecution.getAllFailureExceptions().stream()
                             .map(Throwable::getMessage)

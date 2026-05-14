@@ -14,10 +14,9 @@
 -- WHERE book_id = 1;
 
 
-bestseller_promotion : 하루에 한 번 처리
-discount_promotion : 실시간 처리 필요 (현재는 배치)
-gift_promotion : 선착순 증정품 제공 - 실시간 처리 필요 (현재는 배치)
-
+# bestseller_promotion : 하루에 한 번 처리
+# discount_promotion : 실시간 처리 필요 (현재는 배치)
+# gift_promotion : 선착순 증정품 제공 - 실시간 처리 필요 (현재는 배치)
 
 
 DELIMITER //
