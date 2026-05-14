@@ -71,6 +71,9 @@
     Table : bestseller_promotion (베스트셀러 프로모션)
     Table : book (도서 상품 정보)
     ```
+    <img width="644" height="497" alt="detail" src="https://github.com/user-attachments/assets/ad43e4d9-5b84-40a8-80cb-cfe3d104ad17" />
+
+
 ---
 ### 초기 배치 프로시저 구조를 사용한 이유
 
@@ -134,6 +137,10 @@
 
     <img width="1170" height="380" alt="batch" src="https://github.com/user-attachments/assets/81dbd70e-1069-40f0-a5cf-fa1b18c01c33" />
 
+- 배치 프로시저 동작에 따른 `list.jsp`, `detail.jsp` 결과 비교
+
+    <img width="595" height="510" alt="스크린샷 2026-05-14 오후 5 33 01" src="https://github.com/user-attachments/assets/cac580ff-48e0-4481-9cab-79fe543f5918" />
+
 
 3. 배치 프로시저 동작 중, 증정품 재고 소진
 - 증정품 재고가 소진되었지만, 배치 프로시저는 실행되지 않은 상태입니다.
@@ -144,6 +151,9 @@
     WHERE book_id = 1;
     ```
 
+    <img width="229" height="87" alt="스크린샷 2026-05-14 오후 5 17 02" src="https://github.com/user-attachments/assets/58346e9c-f88a-46f1-b60d-c322da7ee6d8" />
+
+
 
 4. 조회 데이터 불일치 발생
     - 상품 목록 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
@@ -152,6 +162,14 @@
     동일한 상품에 대해 상태가 다르게 보이는 데이터 정합성 문제가 발생합니다.
     ```
 
+    <img width="628" height="348" alt="스크린샷 2026-05-14 오후 5 34 08" src="https://github.com/user-attachments/assets/78e11521-76ac-435a-a846-3c9594961a26" />
+
+5. 다음 배치 주기 실행 후 book_display_info가 갱신되며 데이터 정합성이 회복됨
+
+    <img width="594" height="505" alt="스크린샷 2026-05-14 오후 5 32 34" src="https://github.com/user-attachments/assets/c1dfaffb-e1f6-4c38-ab01-0c7cd4787f9b" />
+
+
+    
 
 ---
 
