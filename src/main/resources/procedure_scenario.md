@@ -1,118 +1,185 @@
+## 레거시 시스템(프로시저 기반 배치)의 데이터 정합성 문제 재현
 
-기존 구조에서는 API가 각 도메인 테이블을 직접 조회하지 않고,
-배치 프로시저가 생성한 book_display_info 조회용 테이블을 참조했습니다.
+### 개요
 
-(초기 프로시저 기반 개발 이유 : 조회 API를 빠르고 단순하게 만들기 위해서)
-복잡한 계산은 배치 프로시저가 미리 해둔다 > API는 book_display_info만 빠르게 읽는다
+`선착순 증정 이벤트`가 진행 중인 도서에서 증정품 재고가 모두 소진되었음에도,
+도서 목록 상품 카드에는 여전히 `선착순 증정 태그`가 노출되는 데이터 정합성 문제를 가정합니다.
 
-(장점)
+본 프로젝트는 조회 성능 최적화를 위해 사용하던 `배치 프로시저 기반 구조`에서 발생할 수 있는 문제를 재현하고, 
+이후 `이벤트 스트림 기반 아키텍처`로 전환해야 하는 이유를 설명하기 위한 목적을 가집니다.
+
+---
+
+### 프로젝트 구성
+
+<a href="https://www.bigdata-culture.kr/bigdata/user/data_market/detail.do?id=63513d7b-9b87-4ec1-a398-0a18ecc45411">국립중앙도서관 도서별 상세정보 공공데이터</a> 기반 약 8만 건의 정제된 도서 데이터를 저장한 `온라인 도서 판매 서비스`를 개발했습니다.
+
+고객은 도서 목록 화면에서 다양한 도서를 카드 형태로 조회할 수 있으며, 현재 진행 중인 프로모션 상태에 따라 다음과 같은 태그가 노출됩니다.
+
+```agsl
+1. BESTSELLER
+2. DISCOUNT
+3. GIFT (선착순 증정 이벤트)
+```
+
+<img width="187" height="309" alt="스크린샷 2026-05-14 오전 12 33 28" src="https://github.com/user-attachments/assets/ef2fcf71-91ed-4822-b204-7ddc2442efd8" />
+
+
+---
+### 도서 상품 정보를 표현하는 두 개의 화면 구조
+
+1. `list.jsp` : 도서 리스트 화면
+- 수 만건의 도서 데이터를 빠르게 조회하기 위해, 모든 상품에 대해 원본 프로모션 테이블을 직접 조회하는 것이 아닌, 배치 프로시저가 미리 계산한 조회용 테이블 `book_display_info`를 참조하여 상품 카드를 생성합니다.
+
+- 배치 프로시저는 여러 프로모션 도메인의 상태를 종합하여 promotion_tags 값을 계산합니다.
+    ```agsl
+    list.jsp에서 상품의 프로모션 태그 업데이트를 위한 배치 테이블
+  
+    Table : book_display_info
+    ```
+    ```agsl
+    프로모션 태그 종류
+    
+    1. BESTSELLER (베스트셀러)
+    2. DISCOUNT (할인 중인 도서)
+    3. GIFT (선착순 증정 이벤트)
+    ```
+     ```agsl
+    list.jsp의 프로모션 태그 정보 업데이트 과정
+  
+    1. 테이블 조회
+        gift_promotion
+        discount_promotion
+        bestseller_promotion
+               ↓
+    2. 배치 프로시저 동작 (refresh_book_display_info)
+               ↓
+    3. 프로시저 결과 저장 (book_display_info)
+               ↓
+    4. 상품 목록 페이지에 반영 (list.jsp)
+    ```   
+    <img width="788" height="730" alt="main" src="https://github.com/user-attachments/assets/9292580f-98af-4023-bb0a-227d7929e471" />
+
+
+2. `detail.jsp` : 도서 상세 화면
+- 상세 페이지는 현재 상태의 정확한 데이터를 보여주기 위해 `원본 테이블을 직접 조회`합니다.
+    ```agsl
+    detail.jsp는 원본 테이블 직접 조회
+  
+    Table : gift_promotion (선착순 증정 이벤트 프로모션)
+    Table : discount_promotion (할인 이벤트 프로모션)
+    Table : bestseller_promotion (베스트셀러 프로모션)
+    Table : book (도서 상품 정보)
+    ```
+---
+### 초기 배치 프로시저 구조를 사용한 이유
+
+초기에는 조회 성능과 개발 단순성을 위해 배치 기반 조회 테이블 구조를 사용했습니다.
+특히 상품 목록처럼 호출 빈도가 매우 높은 화면에서는 매 요청마다 여러 도메인 테이블을 조인하지 않아도 되기 때문에 성능상 이점이 있었습니다.
+
+```agsl
+배치 기반 조회의 장점
+
 1. API 조회 속도가 빠름
 2. 조회 로직이 단순함
-3. 복잡한 할인/혜택 계산을 DB 프로시저에 몰아둘 수 있음
-4. 트래픽이 많아도 API 서버 부담이 작음
-5. 초기에 개발 속도가 빠름
+3. 복잡한 할인/혜택 계산을 DB 프로시저에 집중 가능
+4. 트래픽 증가 시 API 서버 부담 감소
+5. 초기 개발 속도가 빠름
+```
 
 ---
+### 도메인별 데이터 특징을 고려하지 못한 프로시저의 한계
 
-(단점)
 
+기존 구조에서는 모든 프로모션 도메인이 하나의 배치 흐름으로 관리되고 있었습니다.
 
-초기에는 조회 성능과 개발 단순성을 위해 여러 도메인 데이터를 배치 프로시저로 미리 계산해 book_display_info에 저장하는 구조를 선택했을 가능성이 큽니다. API는 복잡한 조인이나 조건 계산 없이 조회용 테이블만 읽으면 되기 때문에 응답 속도가 빠르고 구현도 단순합니다.
+서비스 규모가 커지면서 프로모션 도메인마다 `데이터 변경 주기`와 `실시간성 요구사항`이 다르다는 문제가 발생했습니다.
 
-하지만 서비스가 커지면서 베스트셀러, 할인, 선착순 증정품처럼 데이터 변경 주기와 실시간성 요구사항이 다른 도메인이 같은 배치 흐름에 묶이는 문제가 생겼습니다. 특히 할인과 증정품은 원본 상태가 바뀌면 화면에도 즉시 반영되어야 하는데, 기존 구조에서는 다음 배치가 돌기 전까지 book_display_info가 갱신되지 않아 정합성 문제가 발생했습니다.
-
-(사례)
-
-gift_promotion의 상태가 SOLD_OUT으로 바뀌어도
-프로시저가 다시 실행되기 전까지 조회용 테이블에는 GIFT 태그가 남아 있었습니다.
-
-(프로시저 동작 과정)
-
-```
-gift_promotion
-discount_promotion
-bestseller_promotion
-↓
-배치 프로시저(refresh_book_display_info)
-↓
-book_display_info
-↓
-상품 목록 / 상세 API
-```
-
-배치 프로시저는 여러 프로모션 도메인의 상태를 종합해 `promotion_tags` 값을 계산
+그 결과 실시간성이 필요한 할인/증정 이벤트까지 배치 갱신 시점에 의존하게 되었고, 다음 배치가 실행되기 전까지 조회 데이터와 원본 데이터 사이에 차이가 발생했습니다.
 
 ```agsl
-BESTSELLER
-DISCOUNT
-GIFT
+도메인별 데이터 변경 주기와 실시간성 요구사항
+
+1. bestseller_promotion (베스트셀러)
+    → 하루 1회 갱신이면 충분
+
+2. discount_promotion (할인 중인 도서)
+    → 가격 정책 변경에 따라 실시간 반영 필요
+
+3. gift_promotion (선착순 증정 이벤트)
+    → 재고 소진 즉시 품절 처리 필요
 ```
-
-```agsl
-bestseller_promotion
-→ 하루 1회 갱신이면 충분
-
-discount_promotion
-→ 가격 정책 변경 시 즉시 반영 필요
-
-gift_promotion
-→ 재고 소진 즉시 품절 처리 필요
-```
-
-특히 gift_promotion은 선착순 증정품 이벤트였기 때문에 재고가 소진되면 즉시 화면에서 제거되어야 했습니다.
-
-하지만 기존 구조에서는 다음 배치가 실행되기 전까지 book_display_info가 갱신되지 않았습니다.
-
-그 결과 원본 데이터와 조회 데이터 사이의 정합성 문제가 발생했습니다.
-
 
 ---
+### 데이터 정합성 문제가 발생하는 배치 프로시저 재현
 
-시나리오
+1. 초기 상태
+- 상품 목록 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
+- 상품 상세 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
 
-백오피스 테스트 화면에서 원본 데이터, 조회용 데이터, API 응답을 나란히 비교해
-정합성 깨짐을 가시적으로 확인했습니다.
+    ```agsl
+    gift_promotion
+    - remaining_quantity = 1
+    - status = ACTIVE
+    
+    book_display_info
+    - promotion_tags = BESTSELLER,GIFT
+    ```
 
-```agsl
-gift_promotion
-- remaining_quantity = 1
-- status = ACTIVE
+2. 배치 프로시저 구현
+- 30초 마다 프로모션 정보를 갱신하는 배치 프로시저 동작
+    ```agsl
+    procedure.sql
+    ```
 
-book_display_info
-- promotion_tags = BESTSELLER,GIFT
-```
+    <img width="1170" height="380" alt="batch" src="https://github.com/user-attachments/assets/81dbd70e-1069-40f0-a5cf-fa1b18c01c33" />
 
-사용자 상품 조회 API
-```agsl
-GET /api/books/1
-```
-응답 (json)
-```agsl
-{
-  "bookId": 1,
-  "promotionTags": ["BESTSELLER", "GIFT"]
-}
-```
 
-이후 선착순 증정품 재고가 모두 소진되어 원본 데이터가 변경되었습니다.
-
-```agsl
-UPDATE gift_promotion
-SET remaining_quantity = 0,
+3. 배치 프로시저 동작 중, 증정품 재고 소진
+- 증정품 재고가 소진되었지만, 배치 프로시저는 실행되지 않은 상태입니다.
+    ```agsl
+    UPDATE gift_promotion
+    SET remaining_quantity = 0,
     status = 'SOLD_OUT'
-WHERE book_id = 1;
+    WHERE book_id = 1;
+    ```
+
+
+4. 조회 데이터 불일치 발생
+    - 상품 목록 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
+    - 상품 상세 화면 (선착순 증정 이벤트 종료, 남은 수량 : 0)
+    ```
+    동일한 상품에 대해 상태가 다르게 보이는 데이터 정합성 문제가 발생합니다.
+    ```
+
+
+---
+
+### 데이터 정합성 문제 발생 원인
+
+원인은 각 토픽의 조회 경로 차이에 있습니다.
+
+```
+상품 목록 → 배치 기반 조회 테이블 참조
+상품 상세 → 원본 테이블 직접 조회
 ```
 
-하지만 book_display_info는 배치 프로시저가 아직 실행되지 않은 상태였습니다.
+원본 데이터는 이미 변경되었지만 조회용 데이터는 다음 배치 전까지 갱신되지 않음 상태였기 때문에 데이터 정합성 문제가 발생했습니다.
 
-따라서 API는 여전히 이전 조회 데이터를 반환했습니다.
+---
+### 데이터 특성을 고려한 하이브리드 아키텍처 개선 방향
 
-```agsl
-{
-  "bookId": 1,
-  "promotionTags": ["BESTSELLER", "GIFT"]
-}
-```
+`데이터 특성`과 `실시간성 요구사항`에 따라 처리 방식을 분리하는 방향으로 아키텍처를 개선하는 것이 필요합니다.
 
-즉 실제로는 증정품이 종료되었음에도 사용자 화면에는 여전히 “선착순 증정” 태그가 노출되는 문제가 발생했습니다.
+- 실시간성이 중요한 도메인(discount_promotion, gift_promotion)은 배치 기반 구조가 아닌 이벤트 기반 구조로 분리하는 방향을 검토했습니다.
 
+    ```agsl
+  선착순 증정 이벤트에서 실시간 반영을 위한 개선 방향  
+  
+  gift_promotion 상태 변경
+    → CDC 이벤트 발행
+    → Kafka Stream 처리
+    → book_display_info 즉시 갱신
+    ```
+
+- 실시간성이 낮은 bestseller_promotion은 기존 배치 방식을 유지하여 비용과 복잡도를 최소화하는 방향으로 설계할 수 있습니다.
