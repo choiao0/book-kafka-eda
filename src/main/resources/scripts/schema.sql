@@ -8,17 +8,20 @@ DROP TABLE IF EXISTS book;
 
 CREATE TABLE book (
                       book_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
-                      isbn          VARCHAR(20)  NOT NULL UNIQUE,
-                      title         VARCHAR(200) NOT NULL,
-                      author        VARCHAR(100) NOT NULL,
-                      publisher     VARCHAR(100),
-                      regular_price INT          NOT NULL,
-                      category      VARCHAR(50),
-                      thumbnail_url VARCHAR(500),
+                      isbn          VARCHAR(20)   NOT NULL UNIQUE,
+                      title         VARCHAR(500)  NOT NULL,
+                      author        VARCHAR(255)  NOT NULL,
+                      publisher     VARCHAR(255),
+                      regular_price INT           NOT NULL,
+                      content       TEXT,
+                      thumbnail_url VARCHAR(1000),
                       published_at  DATETIME,
-                      created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                      updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                      created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                      updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                          ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE UNIQUE INDEX idx_book_isbn ON book(isbn);
 
 CREATE TABLE bestseller_promotion (
                                       promotion_id BIGINT AUTO_INCREMENT PRIMARY KEY,
