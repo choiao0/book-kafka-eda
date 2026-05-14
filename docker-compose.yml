@@ -8,6 +8,8 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+    command:
+      - --secure-file-priv=/var/lib/mysql-files
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
