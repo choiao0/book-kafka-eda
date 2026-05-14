@@ -1,4 +1,4 @@
-## 프로시저 기반 배치 시스템의 데이터 정합성 문제
+## 레거시 시스템(프로시저 기반 배치)의 데이터 정합성 문제 재현
 
 ### 개요
 
@@ -12,7 +12,7 @@
 
 ### 프로젝트 구성
 
-국립중앙도서관 공공데이터 기반 약 8만 건의 정제된 도서 데이터를 저장한 온라인 도서 판매 서비스를 개발했습니다.
+국립중앙도서관 공공데이터 기반 약 8만 건의 정제된 도서 데이터를 저장한 `온라인 도서 판매 서비스`를 개발했습니다.
 
 고객은 도서 목록 화면에서 다양한 도서를 카드 형태로 조회할 수 있으며, 현재 진행 중인 프로모션 상태에 따라 다음과 같은 태그가 노출됩니다.
 
@@ -30,30 +30,42 @@
 
 1. `list.jsp` : 도서 리스트 화면
 - 수 만건의 도서 데이터를 빠르게 조회하기 위해, 모든 상품에 대해 원본 프로모션 테이블을 직접 조회하는 것이 아닌, 배치 프로시저가 미리 계산한 조회용 테이블 `book_display_info`를 참조하여 상품 카드를 생성합니다.
-    ```agsl
-    gift_promotion
-    discount_promotion
-    bestseller_promotion
-            ↓
-    배치 프로시저(refresh_book_display_info)
-            ↓
-    book_display_info
-            ↓
-    상품 목록 API(list.jsp)
-    ```
+
 - 배치 프로시저는 여러 프로모션 도메인의 상태를 종합하여 promotion_tags 값을 계산합니다.
     ```agsl
-    BESTSELLER,GIFT
-    DISCOUNT
-    BESTSELLER,DISCOUNT
+    list.jsp에서 상품의 프로모션 태그 업데이트를 위한 배치 테이블
+  
+    Table : book_display_info
     ```
+    ```agsl
+    프로모션 태그 종류
     
+    1. BESTSELLER (베스트셀러)
+    2. DISCOUNT (할인 중인 도서)
+    3. GIFT (선착순 증정 이벤트)
+    ```
+     ```agsl
+    list.jsp의 프로모션 태그 정보 업데이트 과정
+  
+    1. 테이블 조회
+        gift_promotion
+        discount_promotion
+        bestseller_promotion
+               ↓
+    2. 배치 프로시저 동작 (refresh_book_display_info)
+               ↓
+    3. 프로시저 결과 저장 (book_display_info)
+               ↓
+    4. 상품 목록 페이지에 반영 (list.jsp)
+    ```   
     <img width="788" height="730" alt="main" src="https://github.com/user-attachments/assets/9292580f-98af-4023-bb0a-227d7929e471" />
 
 
 2. `detail.jsp` : 도서 상세 화면
-- 상세 페이지는 현재 상태의 정확한 데이터를 보여주기 위해 원본 테이블을 직접 조회합니다.
+- 상세 페이지는 현재 상태의 정확한 데이터를 보여주기 위해 `원본 테이블을 직접 조회`합니다.
     ```agsl
+    detail.jsp는 원본 테이블 직접 조회
+  
     Table : gift_promotion (선착순 증정 이벤트 프로모션)
     Table : discount_promotion (할인 이벤트 프로모션)
     Table : bestseller_promotion (베스트셀러 프로모션)
@@ -66,6 +78,8 @@
 특히 상품 목록처럼 호출 빈도가 매우 높은 화면에서는 매 요청마다 여러 도메인 테이블을 조인하지 않아도 되기 때문에 성능상 이점이 있었습니다.
 
 ```agsl
+배치 기반 조회의 장점
+
 1. API 조회 속도가 빠름
 2. 조회 로직이 단순함
 3. 복잡한 할인/혜택 계산을 DB 프로시저에 집중 가능
@@ -84,20 +98,25 @@
 그 결과 실시간성이 필요한 할인/증정 이벤트까지 배치 갱신 시점에 의존하게 되었고, 다음 배치가 실행되기 전까지 조회 데이터와 원본 데이터 사이에 차이가 발생했습니다.
 
 ```agsl
-bestseller_promotion
-→ 하루 1회 갱신이면 충분
+도메인별 데이터 변경 주기와 실시간성 요구사항
 
-discount_promotion
-→ 가격 정책 변경 즉시 반영 필요
+1. bestseller_promotion (베스트셀러)
+    → 하루 1회 갱신이면 충분
 
-gift_promotion
-→ 재고 소진 즉시 품절 처리 필요
+2. discount_promotion (할인 중인 도서)
+    → 가격 정책 변경에 따라 실시간 반영 필요
+
+3. gift_promotion (선착순 증정 이벤트)
+    → 재고 소진 즉시 품절 처리 필요
 ```
 
 ---
 ### 데이터 정합성 문제가 발생하는 배치 프로시저 재현
 
 1. 초기 상태
+- 상품 목록 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
+- 상품 상세 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
+
     ```agsl
     gift_promotion
     - remaining_quantity = 1
@@ -106,35 +125,32 @@ gift_promotion
     book_display_info
     - promotion_tags = BESTSELLER,GIFT
     ```
-- 상품 목록 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
-- 상품 상세 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
 
 2. 배치 프로시저 구현
-
+- 30초 마다 프로모션 정보를 갱신하는 배치 프로시저 동작
     ```agsl
     procedure.sql
     ```
-- 30초 마다 프로모션 정보를 갱신하는 배치 프로시저 동작
 
     <img width="1170" height="380" alt="batch" src="https://github.com/user-attachments/assets/81dbd70e-1069-40f0-a5cf-fa1b18c01c33" />
 
 
 3. 배치 프로시저 동작 중, 증정품 재고 소진
-   ```agsl
+- 증정품 재고가 소진되었지만, 배치 프로시저는 실행되지 않은 상태입니다.
+    ```agsl
     UPDATE gift_promotion
     SET remaining_quantity = 0,
     status = 'SOLD_OUT'
     WHERE book_id = 1;
     ```
-- 그러나 아직 배치 프로시저는 실행되지 않은 상태입니다.
+
 
 4. 조회 데이터 불일치 발생
-
+    - 상품 목록 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
+    - 상품 상세 화면 (선착순 증정 이벤트 종료, 남은 수량 : 0)
     ```
     동일한 상품에 대해 상태가 다르게 보이는 데이터 정합성 문제가 발생합니다.
     ```
-   - 상품 목록 화면 (선착순 증정 이벤트 진행 중, 남은 수량 : 1)
-   - 상품 상세 화면 (선착순 증정 이벤트 종료, 남은 수량 : 10
 
 
 ---
@@ -158,7 +174,9 @@ gift_promotion
 - 실시간성이 중요한 도메인(discount_promotion, gift_promotion)은 배치 기반 구조가 아닌 이벤트 기반 구조로 분리하는 방향을 검토했습니다.
 
     ```agsl
-    gift_promotion 상태 변경
+  선착순 증정 이벤트에서 실시간 반영을 위한 개선 방향  
+  
+  gift_promotion 상태 변경
     → CDC 이벤트 발행
     → Kafka Stream 처리
     → book_display_info 즉시 갱신
