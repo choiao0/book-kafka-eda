@@ -27,7 +27,18 @@ spring:
     jdbc:
       initialize-schema: always # Spring Batch 메타 테이블 자동 생성
 
+  kafka:
+    bootstrap-servers: localhost:9092
+
   mvc:
     view:
       prefix: /WEB-INF/views/
       suffix: .jsp
+
+kafka:
+  topic:
+    gift-promotion: book.promotion.gift
+
+batch:
+  scheduler:
+    enabled: false   # true로 바꾸면 30초 배치 재활성화
