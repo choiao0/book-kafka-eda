@@ -116,6 +116,8 @@ gift_promotion 변경
      - 배치 구조는 `book_display_info` 전체 프로모션 데이터를 반복적으로 재계산했습니다.
    - 개선 후
      - `변경된 상품의 이벤트만 처리`하므로 불필요한 전체 조회와 갱신을 줄일 수 있습니다.
+     <img width="1059" height="136" alt="스크린샷 2026-05-15 오전 10 48 58" src="https://github.com/user-attachments/assets/8e8c083d-15ce-4482-b39c-7e5e4580410d" />
+
 
 
 3. 운영 관측성
