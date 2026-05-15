@@ -116,8 +116,7 @@ gift_promotion 변경
             <img width="1245" height="49" alt="스크린샷 2026-05-15 오전 10 53 51" src="https://github.com/user-attachments/assets/5879b06f-a5d3-4322-bfe8-d766b328f736" />
 
    - kafka 이벤트 스트림 기반 구조로 개선 후, 변경된 상품의 이벤트만 처리하므로 불필요한 전체 조회와 갱신을 줄일 수 있었습니다.
-<img width="1059" height="136" alt="스크린샷 2026-05-15 오전 10 48 58" src="https://github.com/user-attachments/assets/8e8c083d-15ce-4482-b39c-7e5e4580410d" />
-
+            <img width="1255" height="84" alt="스크린샷 2026-05-15 오전 10 59 46" src="https://github.com/user-attachments/assets/ee0e7ab4-c6c0-4143-88aa-2fda44a06833" />
 
 
 3. 운영 관측성
