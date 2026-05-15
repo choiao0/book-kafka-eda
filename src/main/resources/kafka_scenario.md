@@ -82,6 +82,9 @@ gift_promotion 변경
 
 3. Kafka 이벤트 스트림 구조를 통해, 증정품 재고 소진 후 `list.jsp`에 변경 현황 즉시 반영됨
 
+<img width="663" height="432" alt="스크린샷 2026-05-15 오전 10 36 41" src="https://github.com/user-attachments/assets/8ad7a8c6-2a4b-4fe6-9ca2-e98ba5e024fd" />
+
+
 ---
 ### 기존 배치 구조와 Kafka 이벤트 기반 구조 비교
 
