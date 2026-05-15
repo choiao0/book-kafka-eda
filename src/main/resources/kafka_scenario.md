@@ -112,13 +112,11 @@ gift_promotion 변경
 
 2. DB I/O 감소
 
-   - 개선 전
-     - 배치 구조는 `book_display_info` 전체 프로모션 데이터를 반복적으로 재계산했습니다.
-     <img width="1245" height="49" alt="스크린샷 2026-05-15 오전 10 53 51" src="https://github.com/user-attachments/assets/5879b06f-a5d3-4322-bfe8-d766b328f736" />
+   - 개선 전 배치 구조는 `book_display_info` 전체 프로모션 데이터를 반복적으로 재계산해 불필요한 DB I/O가 있었습니다.
+            <img width="1245" height="49" alt="스크린샷 2026-05-15 오전 10 53 51" src="https://github.com/user-attachments/assets/5879b06f-a5d3-4322-bfe8-d766b328f736" />
 
-   - 개선 후
-     - `변경된 상품의 이벤트만 처리`하므로 불필요한 전체 조회와 갱신을 줄일 수 있습니다.
-     <img width="1059" height="136" alt="스크린샷 2026-05-15 오전 10 48 58" src="https://github.com/user-attachments/assets/8e8c083d-15ce-4482-b39c-7e5e4580410d" />
+   - kafka 이벤트 스트림 기반 구조로 개선 후, 변경된 상품의 이벤트만 처리하므로 불필요한 전체 조회와 갱신을 줄일 수 있었습니다.
+<img width="1059" height="136" alt="스크린샷 2026-05-15 오전 10 48 58" src="https://github.com/user-attachments/assets/8e8c083d-15ce-4482-b39c-7e5e4580410d" />
 
 
 
