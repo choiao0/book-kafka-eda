@@ -58,9 +58,17 @@ public class GiftPromotionProducer {
 
         try {
             String message = MAPPER.writeValueAsString(event);
-            kafkaTemplate.send(topic, String.valueOf(bookId), message);
-            log.info("[KAFKA] 발행 | topic: {} | eventId: {} | bookId: {} | type: {}",
-                    topic, eventId, bookId, eventType);
+            kafkaTemplate.send(topic, String.valueOf(bookId), message)
+                    .whenComplete((result, ex) -> {
+                        if (ex != null) {
+                            log.error("[KAFKA] 전송 실패 | eventId: {} | bookId: {} | cause: {}",
+                                    eventId, bookId, ex.getMessage());
+                        } else {
+                            log.info("[KAFKA] 발행 | topic: {} | eventId: {} | bookId: {} | type: {} | offset: {}",
+                                    topic, eventId, bookId, eventType,
+                                    result.getRecordMetadata().offset());
+                        }
+                    });
         } catch (JsonProcessingException e) {
             log.error("[KAFKA] 직렬화 실패 | bookId: {}", bookId, e);
             throw new RuntimeException("Kafka 이벤트 직렬화 실패", e);
