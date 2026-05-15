@@ -86,6 +86,11 @@ Spring Batch (주기적 실행)
 - `KAFKA_EVENT_LOG` — 이벤트 발행/소비 이력
 
 
+<img width="751" height="497" alt="스크린샷 2026-05-15 오전 11 03 58" src="https://github.com/user-attachments/assets/fcec7f3f-0ebd-4b25-95aa-06266b4524a9" />
+<img width="751" height="426" alt="스크린샷 2026-05-15 오전 11 04 18" src="https://github.com/user-attachments/assets/6940bcf8-fb43-44f2-8b03-25a0f2c98fae" />
+
+
+
 ## References
  
 - [올리브영 테크블로그 — 45분 배치에서 준실시간으로](https://oliveyoung.tech/2026-04-22/display-benefits-migration/)
